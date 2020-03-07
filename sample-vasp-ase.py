@@ -47,8 +47,8 @@ vector=ontop - c[0]
 adsorbates.translate(vector)
 
 #move upward 2A
-dist=2.0
-adsorbates.translate([0.0, 0.0, top+dist])
+dist=3.0
+adsorbates.translate([0.0, 0.0, dist])
 
 slab.extend(adsorbates)
 slab.center(vacuum=vac, axis=2)
