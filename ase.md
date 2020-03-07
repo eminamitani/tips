@@ -148,5 +148,8 @@ calc.write_potcar()
 
 ```
 
+うまく動くと
+![](/sample-ase-vasp.png)
+のような構造が作られるはず
 
 
