@@ -15,7 +15,7 @@ export VASP_PP_PATH=$HOME/vasp_paw
 - 基板の構造
 - 分子の構造
   
-を別個に作って構造緩和させておいて、それを合体するパターンが多い。分子は中心をユニットセル原点に来るように作ることが多いのだが、それだと回転してくっつけたりするときにとんでもない操作が行われて崩壊することが多い。一回真ん中に寄せておくのが正解。その時の操作がこんな感じ。
+を別個に作って構造緩和させておいて、それを合体するパターンが多い。分子単体の計算のときは中心をユニットセル原点に来るように作ることが多いのだが、その構造データをそのまま読み込んで処理すると回転してくっつけたりするときにとんでもない操作が行われて崩壊することが多い。一回真ん中に寄せておくのが正解。その時の操作がこんな感じ。
 
 ```
 from ase import Atoms
@@ -54,7 +54,7 @@ slab.extend(adsorbates)
 slab.center(vacuum=vacuum, axis=2)
 ```
 
-場合によっては、Slabの何層かを固定したいときがある。これにはFixAtomsを使う。自分はよくある条件より下の原子にはFixの条件をつけるみたいなので実装している。
+場合によっては、Slabの何層かを固定したいときがある。これには`FixAtoms`を使う。自分はよくある条件より下の原子にはFixの条件をつけるみたいなので実装している。
 ```
 bottom=min(slab.positions[:,2])
 fix=FixAtoms(indices=[atom.index for atom in slab if abs(atom.position[2]-bottom) < 0.5])
@@ -66,7 +66,7 @@ slab.set_constraint(fix)
 write("POSCAR.vasp", slab, sort=True, format='vasp', vasp5=True, direct=True)
 ```
 
-potcar もついでに作りたい。上でPOSCAR作る時にソートかけてるので、順番がもとのデータと違っている可能性があるから、作ったファイル読みこんで作ったほうがいい。どの元素でどのポテンシャル使えばいいかはVASP公式おすすめセットがすでにVaspモジュール内に準備されていて`setups='recommended'`のオプションを使えばそれを参照できる。
+POTCAR もついでに作りたい。上でPOSCAR作る時にソートかけてるので、順番がもとのデータと違っている可能性があるから、作ったファイル読みこんで作ったほうがいい。どの元素でどのポテンシャル使えばいいかはVASP公式おすすめセットがすでにVaspモジュール内に準備されていて`setups='recommended'`のオプションを使えばそれを参照できる。
 ```
 from ase.calculators.vasp import Vasp
 calc = Vasp(xc='pbe',setups='recommended')
@@ -75,9 +75,10 @@ calc.initialize(atoms)
 calc.write_potcar()
 ```
 
-###　実例
+### 実例
 例えばAu(111)表面にFePcをつけてみよう。
-（えらく偏った例だ）典型的な表面なので、ここでは更に ase.buildのfcc111というfcc111のスラブを作るモジュールも使っている。
+（えらく偏った例だが。）典型的な表面なので、ここでは更に `ase.build`の`fcc111`というfcc111のスラブを作るモジュールも使っている。FePcの構造は同ディレクトリの`CONTCAR`を使っているが、これとかAuの格子定数とかは適当なので信用しないように。  
+まとめたソース・ファイルは`sample.py`
 
 ```
 from ase import Atoms
