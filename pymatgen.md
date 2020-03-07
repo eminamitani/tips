@@ -17,8 +17,9 @@ VASPのPOTCARを解凍済みのディレクトリを<VASP_PP_DIR>とする。pym
  ```
  で環境変数を設定する。
 
-
+元素記号指定でPOTCARを作る方法の例が
 ```
 from pymatgen.io.vasp.inputs import Potcar
-
+potcar = Potcar(symbols=['C_s','H','N'])
 ```
+pymatgenのPotcarは明示的にsymbolを与えないと行けないので、そこが厄介。この部分はASEのcalculator.vasp.Vaspのほうが賢い。
