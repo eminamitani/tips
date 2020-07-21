@@ -25,11 +25,12 @@ structure=ase.io.read('POSCAR',format='vasp')
 #using Rc.item for this purpose
 #ASE neighbor list does not include self,
 #but count the atoms in image cell within cutoff
-i_list, j_list, D_list = ase.neighborlist.neighbor_list(
-    'ijD', structure, Rc.item())
+i_list, j_list, D_list, S_list = ase.neighborlist.neighbor_list(
+    'ijDS', structure, Rc.item())
 print(i_list)
 print(j_list)
 print(D_list)
+print(S_list)
 
 pos=structure.get_positions()
 natom=len(pos)
@@ -38,12 +39,20 @@ xi=torch.tensor([pos[i][0] for i in i_list],requires_grad=True,dtype=torch.doubl
 yi=torch.tensor([pos[i][1] for i in i_list],requires_grad=True,dtype=torch.double)
 zi=torch.tensor([pos[i][1] for i in i_list],requires_grad=True,dtype=torch.double)
 #neighbour
-xj=torch.tensor([pos[j][0] for j in j_list],requires_grad=True,dtype=torch.double)
-yj=torch.tensor([pos[j][1] for j in j_list],requires_grad=True,dtype=torch.double)
-zj=torch.tensor([pos[j][1] for j in j_list],requires_grad=True,dtype=torch.double)
+#assign to the actual position in image cell by using shift vector information
+xj=torch.tensor([pos[j][0]+np.dot(S_list[j],structure.cell)[0] for j in j_list],requires_grad=True,dtype=torch.double)
+yj=torch.tensor([pos[j][1]+np.dot(S_list[j],structure.cell)[1] for j in j_list],requires_grad=True,dtype=torch.double)
+zj=torch.tensor([pos[j][1]+np.dot(S_list[j],structure.cell)[2] for j in j_list],requires_grad=True,dtype=torch.double)
 
+'''
 print(xi.shape)
-g2array=torch.zeros([natom,1])
+print(xi[0:2])
+print(yi[0:2])
+print(zi[0:2])
+print(xj[0:2])
+print(yj[0:2])
+print(zj[0:2])
+'''
 g2array=g2(xi,yi,zi, xj,yj,zj, Rc, Rs, eta)
 print(g2array.shape)
 print(np.count_nonzero(i_list ==0))
