@@ -37,12 +37,12 @@ natom=len(pos)
 #center
 xi=torch.tensor([pos[i][0] for i in i_list],requires_grad=True,dtype=torch.double)
 yi=torch.tensor([pos[i][1] for i in i_list],requires_grad=True,dtype=torch.double)
-zi=torch.tensor([pos[i][1] for i in i_list],requires_grad=True,dtype=torch.double)
+zi=torch.tensor([pos[i][2] for i in i_list],requires_grad=True,dtype=torch.double)
 #neighbour
 #assign to the actual position in image cell by using shift vector information
 xj=torch.tensor([pos[j][0]+np.dot(S_list[j],structure.cell)[0] for j in j_list],requires_grad=True,dtype=torch.double)
 yj=torch.tensor([pos[j][1]+np.dot(S_list[j],structure.cell)[1] for j in j_list],requires_grad=True,dtype=torch.double)
-zj=torch.tensor([pos[j][1]+np.dot(S_list[j],structure.cell)[2] for j in j_list],requires_grad=True,dtype=torch.double)
+zj=torch.tensor([pos[j][2]+np.dot(S_list[j],structure.cell)[2] for j in j_list],requires_grad=True,dtype=torch.double)
 
 '''
 print(xi.shape)
