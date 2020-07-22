@@ -85,6 +85,46 @@ def g5_deriv_xi(xi,yi,zi,xj,yj,zj, xk,yk,zk,Rc, lamb,eta, zeta):
 
     return deriv
 
+def g5_deriv_xj(xi,yi,zi,xj,yj,zj, xk,yk,zk,Rc, lamb,eta, zeta):
+    deriv=0.0
+    Rij=torch.sqrt(((xi-xj)**2+(yi-yj)**2+(zi-zj)**2))
+    Rik = torch.sqrt(((xi - xk) ** 2 + (yi - yk) ** 2 + (zi - zk) ** 2))
+    cosijk = ((xi - xj) * (xi - xk) + (yi - yj) * (yi - yk) + (zi - zj) * (zi - zk)) / Rij / Rik
+    exp=torch.exp(-eta*(Rij*Rij+Rik*Rik))
+    pow=torch.pow(1.0+lamb*cosijk,zeta)
+    inner=(xi - xj) * (xi - xk) + (yi - yj) * (yi - yk) + (zi - zj) * (zi - zk)
+    dcosijk=-(xi-xk)/Rij/Rik+inner*(xi-xj)/Rij**3/Rik
+    scale=torch.pow(2.0,1.0-zeta)
+    deriv+=lamb*zeta*torch.pow(1.0+lamb*cosijk,zeta-1.0)*dcosijk*exp*fc(Rij,Rc)*fc(Rik,Rc)*scale
+
+    dexp=2.0*eta*(xi-xj)*torch.exp(-eta*(Rij*Rij+Rik*Rik))
+    deriv+=pow*dexp*fc(Rij,Rc)*fc(Rik,Rc)*scale
+
+    dfcRij=0.5*np.pi/Rc*(xi-xj)/Rij*torch.sin(np.pi*Rij/Rc)
+    deriv+=pow*exp*dfcRij*fc(Rik,Rc)*scale
+
+    return deriv
+
+def g5_deriv_xk(xi,yi,zi,xj,yj,zj, xk,yk,zk,Rc, lamb,eta, zeta):
+    deriv=0.0
+    Rij=torch.sqrt(((xi-xj)**2+(yi-yj)**2+(zi-zj)**2))
+    Rik = torch.sqrt(((xi - xk) ** 2 + (yi - yk) ** 2 + (zi - zk) ** 2))
+    cosijk = ((xi - xj) * (xi - xk) + (yi - yj) * (yi - yk) + (zi - zj) * (zi - zk)) / Rij / Rik
+    exp=torch.exp(-eta*(Rij*Rij+Rik*Rik))
+    pow=torch.pow(1.0+lamb*cosijk,zeta)
+    inner=(xi - xj) * (xi - xk) + (yi - yj) * (yi - yk) + (zi - zj) * (zi - zk)
+    dcosijk=-(xi-xj)/Rij/Rik+inner*(xi-xk)/Rik**3/Rij
+    scale=torch.pow(2.0,1.0-zeta)
+    deriv+=lamb*zeta*torch.pow(1.0+lamb*cosijk,zeta-1.0)*dcosijk*exp*fc(Rij,Rc)*fc(Rik,Rc)*scale
+
+    dexp=2.0*eta*(xi-xk)*torch.exp(-eta*(Rij*Rij+Rik*Rik))
+    deriv+=pow*dexp*fc(Rij,Rc)*fc(Rik,Rc)*scale
+
+    dfcRik = 0.5 * np.pi / Rc * (xi - xk) / Rik * torch.sin(np.pi * Rik / Rc)
+    deriv+=pow*exp*fc(Rij,Rc)*dfcRik*scale
+
+    return deriv
+
 
 
 #in order to obtain derivative for vector input (various atomic position etc)
@@ -113,7 +153,7 @@ print(zj.grad)
 
 
 
-#need to refresh before using xi, xj etc
+#need to refresh before using xi, xj etc for g5 calculation.
 #without this initialization, gradient value becomes strange
 #need to confirm the way of scoping in torch.tensor
 xi=torch.tensor([0.0,1.0],requires_grad=True)
@@ -134,6 +174,16 @@ print("xi grad")
 print(xi.grad)
 print("direct differentiation")
 print(g5_deriv_xi(xi,yi,zi,xj,yj,zj, xk,yk,zk,Rc, lamb,eta, zeta))
+
+print("xj grad")
+print(xj.grad)
+print("direct differentiation")
+print(g5_deriv_xj(xi,yi,zi,xj,yj,zj, xk,yk,zk,Rc, lamb,eta, zeta))
+
+print("xk grad")
+print(xk.grad)
+print("direct differentiation")
+print(g5_deriv_xk(xi,yi,zi,xj,yj,zj, xk,yk,zk,Rc, lamb,eta, zeta))
 
 
 
